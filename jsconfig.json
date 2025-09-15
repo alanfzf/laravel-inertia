@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "ES6",
+        "target": "ES6",
+        "paths": {
+            "@/*": ["./resources/js/*"],
+            "!/*": ["./resources/images/*"],
+            "#/*": ["./resources/css/*"]
+        }
+    },
+    "exclude": ["node_modules"]
+}
