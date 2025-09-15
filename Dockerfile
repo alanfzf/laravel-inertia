@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.21
+ARG ALPINE_VERSION=3.22.1
 
 # ==================
 # VENDOR STAGE
@@ -75,7 +75,7 @@ ENV PHP_INI_DIR="/etc/php84"
 COPY etc/nginx.conf /etc/nginx/nginx.conf
 COPY etc/conf.d /etc/nginx/conf.d/
 
-# configure fpm
+# configure fpm & and php
 COPY etc/fpm-pool.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 COPY etc/php.ini ${PHP_INI_DIR}/conf.d/custom.ini
 

@@ -1,0 +1,20 @@
+services:
+  laravel: &backend
+    build:
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./:/var/www/html
+      - lockdir:/var/lock
+    ports:
+      - "8000:8000"
+  laravel-que:
+    <<: *backend
+    ports: []
+    command: ["php84", "artisan", "queue:listen", "--verbose"]
+  laravel-vite:
+    <<: *backend
+    ports:
+      - "5173:5173"
+    command: ["pnpm", "dev"]
+volumes:
+  lockdir:

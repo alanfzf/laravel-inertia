@@ -23,6 +23,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 # new stuff
+/.pnpm-store
 /.direnv
 .envrc
 .php-cs-fixer.cache
