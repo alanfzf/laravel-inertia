@@ -1,0 +1,8 @@
+{
+  "name": "Laravel devcontainer",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "laravel",
+  "shutdownAction": "none",
+  "workspaceFolder": "/var/www/html",
+  "features": {}
+}

@@ -35,7 +35,14 @@ RUN apk add --no-cache \
     php84-tokenizer \
     php84-zip \
     php84-phar && \
-    ln -s /usr/bin/php84 /usr/bin/php
+    ln -s /usr/bin/php84 /usr/bin/php && \
+    # var lock permissions
+    mkdir -p /var/lock && \
+    chmod 1777 /var/lock && \
+    # user permissions
+    adduser -u 1000 -s /bin/bash -D dev
+
+USER dev
 
 ENV PHP_INI_DIR="/etc/php84"
 
