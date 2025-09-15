@@ -10,7 +10,7 @@ WORKDIR /var/www/html
 # install dependencies, reference: https://laravel.com/docs/12.x/deployment#server-requirements
 RUN apk add --no-cache \
     # dev packages
-    nodejs pnpm \
+    nodejs pnpm sudo \
     # base packages
     gcompat bash curl zip unzip icu-data-full \
     # php and fastcgi
@@ -40,7 +40,8 @@ RUN apk add --no-cache \
     mkdir -p /var/lock && \
     chmod 1777 /var/lock && \
     # user permissions
-    adduser -u 1000 -s /bin/bash -D dev
+    adduser -u 1000 -s /bin/bash -D dev && \
+    echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER dev
 
