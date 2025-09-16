@@ -10,7 +10,7 @@ WORKDIR /var/www/html
 # install dependencies, reference: https://laravel.com/docs/12.x/deployment#server-requirements
 RUN apk add --no-cache \
     # dev packages
-    nodejs pnpm sudo \
+    nodejs pnpm sudo shadow xz grep coreutils openssh-client \
     # base packages
     gcompat bash curl zip unzip icu-data-full \
     # php and fastcgi

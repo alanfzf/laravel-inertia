@@ -4,5 +4,9 @@
   "service": "laravel",
   "shutdownAction": "none",
   "workspaceFolder": "/var/www/html",
-  "features": {}
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "extraNixConfig": "experimental-features = nix-command flakes"
+    }
+  }
 }
