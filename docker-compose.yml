@@ -10,7 +10,7 @@ services:
   laravel-que:
     <<: *backend
     ports: []
-    command: ["php84", "artisan", "queue:listen", "--verbose"]
+    command: ["php", "artisan", "queue:listen", "--verbose"]
   laravel-vite:
     <<: *backend
     ports:
