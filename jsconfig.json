@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "checkJs": true,
+        "jsx": "react-jsx",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "resolvePackageJsonImports": true,
+        "types": ["vite/client"]
+    }
+}
