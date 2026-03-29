@@ -36,7 +36,7 @@
         ];
 
         phpWithExtensions = (
-          pkgs.php84.buildEnv {
+          pkgs.php85.buildEnv {
             extensions = (
               { enabled, all }:
               enabled
@@ -67,19 +67,77 @@
         devPackages = with nixpkgs; [
           # base stuff
           phpWithExtensions
-          pkgs.nodejs-slim_22
-          pkgs.pnpm
+          pkgs.nodejs_22
           pkgs.curl
           pkgs.zip
           pkgs.unzip
           # php packages
-          pkgs.php84Packages.composer
+          pkgs.php85Packages.composer
           pkgs.vscode-extensions.xdebug.php-debug
         ];
 
         postShellHook = "";
+
       in
       {
+
+        packages.php-build = pkgs.php.buildComposerProject {
+          pname = "php-build";
+          version = "1.0.0";
+          src = ./.;
+
+          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          buildPhase = ''
+            composer install \
+                    --ignore-platform-reqs \
+                    --no-ansi \
+                    --no-interaction \
+                    --no-progress \
+                    --no-scripts \
+                    --prefer-dist \
+                    --optimize-autoloader
+          '';
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r . $out/
+          '';
+        };
+
+        packages.npm-build = pkgs.buildNpmPackage {
+          pname = "npm-build";
+          version = "1.0.0";
+          src = ./.;
+
+          npmDepsHash = "sha256-Kw/XBQdZqgtWITeMbv2ZQTsiaPlZ8cSEabBXEds3ynQ=";
+          npmBuildScript = "build";
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r public/build/ $out/
+          '';
+        };
+
+        packages.docker = pkgs.dockerTools.buildImage {
+          name = "php-app";
+          tag = "latest";
+
+          copyToRoot = pkgs.buildEnv {
+            name = "php-app-files";
+            paths = [
+              pkgs.coreutils
+              pkgs.bashInteractive
+              pkgs.nginx
+              phpWithExtensions
+              self.packages.${system}.npm-build
+              self.packages.${system}.php-build
+            ];
+          };
+
+          config = {
+          };
+        };
+
         devShells = {
           default = pkgs.mkShell {
             name = "php-dev-shell";
