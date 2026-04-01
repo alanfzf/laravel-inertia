@@ -81,26 +81,16 @@
       in
       {
 
-        packages.php-build = pkgs.php.buildComposerProject {
+        packages.php-build = phpWithExtensions.buildComposerProject2 {
           pname = "php-build";
           version = "1.0.0";
           src = ./.;
 
-          vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-          buildPhase = ''
-            composer install \
-                    --ignore-platform-reqs \
-                    --no-ansi \
-                    --no-interaction \
-                    --no-progress \
-                    --no-scripts \
-                    --prefer-dist \
-                    --optimize-autoloader
-          '';
+          vendorHash = "sha256-HPqBn6XIe39bRwMk1mR2LdnDSOkcUss4T45ybugwYBw=";
 
           installPhase = ''
-            mkdir -p $out
-            cp -r . $out/
+            mkdir -p $out/app
+            cp -r . $out/app
           '';
         };
 
@@ -113,8 +103,8 @@
           npmBuildScript = "build";
 
           installPhase = ''
-            mkdir -p $out
-            cp -r public/build/ $out/
+            mkdir -p $out/app/public
+            cp -r public/build/ $out/app/public
           '';
         };
 
@@ -125,10 +115,10 @@
           copyToRoot = pkgs.buildEnv {
             name = "php-app-files";
             paths = [
+              phpWithExtensions
               pkgs.coreutils
               pkgs.bashInteractive
               pkgs.nginx
-              phpWithExtensions
               self.packages.${system}.npm-build
               self.packages.${system}.php-build
             ];
