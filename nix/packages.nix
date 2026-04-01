@@ -4,7 +4,9 @@
   self,
   system,
 }:
+let
 
+in
 {
   php-build = phpWithExtensions.buildComposerProject2 {
     pname = "php-build";
@@ -44,11 +46,22 @@
         pkgs.coreutils
         pkgs.bashInteractive
         pkgs.nginx
+        pkgs.python313Packages.supervisor
         self.packages.${system}.npm-build
         self.packages.${system}.php-build
       ];
     };
 
-    config = { };
+    config = {
+      WorkingDir = "/app";
+      Cmd = [
+        "supervisord"
+        "-c"
+        "/app/etc/supervisor/supervisord.conf"
+      ];
+      ExposedPorts = {
+        "8080/tcp" = { };
+      };
+    };
   };
 }
