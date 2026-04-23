@@ -5,47 +5,47 @@
   system,
 }:
 let
-
+  appSrc = ../.;
+  appDir = "/app";
+  appPort = "8000";
 in
 {
+
   php-build = phpWithExtensions.buildComposerProject2 {
     pname = "php-build";
     version = "1.0.0";
-    src = ../.;
+    src = appSrc;
 
     vendorHash = "sha256-HPqBn6XIe39bRwMk1mR2LdnDSOkcUss4T45ybugwYBw=";
 
     installPhase = ''
-      mkdir -p $out/app
-      cp -r . $out/app
+      mkdir -p $out/${appDir}
+      cp -r vendor $out/${appDir}
     '';
   };
 
   npm-build = pkgs.buildNpmPackage {
     pname = "npm-build";
     version = "1.0.0";
-    src = ../.;
+    src = appSrc;
 
     npmDepsHash = "sha256-Kw/XBQdZqgtWITeMbv2ZQTsiaPlZ8cSEabBXEds3ynQ=";
     npmBuildScript = "build";
 
     installPhase = ''
-      mkdir -p $out/app/public
-      cp -r public/build/ $out/app/public
+      mkdir -p $out/${appDir}/public
+      cp -r public/build/ $out/${appDir}/public
     '';
   };
 
   default =
     let
       # reference: https://discourse.nixos.org/t/build-a-docker-image-with-nginx-php-app-using-dockertools-buildimage/15652/3
-      appPort = "8000";
-      appDir = "/app";
-
       nginxConf = pkgs.writeText "nginx.conf" ''
-        # user nobody nobody;
+        user nobody nobody;
         daemon off;
         pid /dev/null;
-        error_log stderr warn;
+        # error_log stderr warn;
 
         events {}
 
@@ -54,8 +54,8 @@ in
           default_type application/octet-stream;
           client_max_body_size 21M;
 
-          access_log /dev/stdout;
-          error_log /dev/stderr;
+          # access_log /dev/stdout;
+          # error_log /dev/stderr;
 
           map $http_x_forwarded_proto $fastcgi_param_https_variable {
               default "";
@@ -114,8 +114,10 @@ in
         name = "php-app-files";
         paths = [
           phpWithExtensions
-          # ca-certificates
-          pkgs.fakeNss
+          pkgs.dockerTools.usrBinEnv
+          pkgs.dockerTools.binSh
+          pkgs.dockerTools.caCertificates
+          pkgs.dockerTools.fakeNss
           pkgs.openssl
           pkgs.coreutils
           pkgs.bashInteractive
@@ -133,7 +135,11 @@ in
         ];
       };
 
-      runAsRoot = "";
+      runAsRoot = ''
+        #!${pkgs.runtimeShell}
+        ${pkgs.dockerTools.shadowSetup}
+        cp -r ${appSrc}/* ${appDir}
+      '';
 
       extraCommands = ''
         mkdir -p var/log/nginx
@@ -141,6 +147,8 @@ in
         mkdir -p tmp
         chmod 1777 tmp
       '';
+
+      keepContentsDirlinks = false;
 
       config = {
         WorkingDir = "${appDir}";
