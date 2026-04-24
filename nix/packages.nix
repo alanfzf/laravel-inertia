@@ -17,10 +17,12 @@ in
     src = appSrc;
 
     vendorHash = "sha256-HPqBn6XIe39bRwMk1mR2LdnDSOkcUss4T45ybugwYBw=";
+    composerNoPlugins = false;
+    composerNoScripts = false;
 
     installPhase = ''
       mkdir -p $out/${appDir}
-      cp -r vendor $out/${appDir}
+      cp -r vendor/ $out/${appDir}
     '';
   };
 
@@ -40,12 +42,35 @@ in
 
   default =
     let
+
+      fpmConf = pkgs.writeText "www.conf" ''
+        [global]
+        error_log = /dev/stderr
+
+        [www]
+        pm = ondemand
+        pm.max_children = 100
+        pm.process_idle_timeout = 10s;
+        clear_env = no
+
+        listen = 0.0.0.0:9000
+        listen.owner = nobody
+        listen.group = nobody
+        listen.mode = 0660
+        user = nobody
+        group = nobody
+
+        php_admin_flag[log_errors] = on
+        php_admin_flag[display_errors] = on
+        php_admin_value[error_log] = /dev/stderr
+      '';
+
       # reference: https://discourse.nixos.org/t/build-a-docker-image-with-nginx-php-app-using-dockertools-buildimage/15652/3
       nginxConf = pkgs.writeText "nginx.conf" ''
         user nobody nobody;
         daemon off;
         pid /dev/null;
-        # error_log stderr warn;
+        error_log stderr warn;
 
         events {}
 
@@ -54,13 +79,8 @@ in
           default_type application/octet-stream;
           client_max_body_size 21M;
 
-          # access_log /dev/stdout;
-          # error_log /dev/stderr;
-
-          map $http_x_forwarded_proto $fastcgi_param_https_variable {
-              default "";
-              https "on";
-          }
+          access_log /dev/stdout;
+          error_log /dev/stderr;
 
           server {
             listen [::]:${appPort} default_server;
@@ -85,7 +105,6 @@ in
               fastcgi_index index.php;
               fastcgi_pass 127.0.0.1:9000;
               fastcgi_split_path_info ^(.+\.php)(/.+)$;
-              fastcgi_param HTTPS $fastcgi_param_https_variable if_not_empty;
 
               include ${pkgs.nginx}/conf/fastcgi_params;
               include ${pkgs.nginx}/conf/fastcgi.conf;
@@ -123,6 +142,7 @@ in
           pkgs.bashInteractive
           pkgs.nginx
           pkgs.curl
+          pkgs.php85Packages.composer
           pkgs.xz
           pkgs.zip
           pkgs.unzip
@@ -130,7 +150,7 @@ in
           self.packages.${system}.php-build
           (pkgs.writeScriptBin "start-server" ''
             #!${pkgs.runtimeShell}
-            php-fpm -y /etc/php-fpm.d/www.conf.default & nginx -c ${nginxConf}
+            php-fpm -y ${fpmConf} & nginx -c ${nginxConf}
           '')
         ];
       };
@@ -139,6 +159,7 @@ in
         #!${pkgs.runtimeShell}
         ${pkgs.dockerTools.shadowSetup}
         cp -r ${appSrc}/* ${appDir}
+        chown -R nobody:nobody ${appDir}
       '';
 
       extraCommands = ''
