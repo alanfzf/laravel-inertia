@@ -1,6 +1,5 @@
 {
   pkgs,
-  phpWithExtensions,
 }:
 let
   mkScript = name: text: pkgs.writeShellScriptBin name text;
@@ -9,6 +8,12 @@ let
       node ${pkgs.vscode-extensions.xdebug.php-debug}/share/vscode/extensions/xdebug.php-debug/out/phpDebug.js
     '')
   ];
+
+  phpWithExtensions = import ./php.nix {
+    inherit pkgs;
+    production = false;
+  };
+
 in
 
 pkgs.mkShell {
@@ -16,11 +21,11 @@ pkgs.mkShell {
   nativeBuildInputs = scripts;
   packages = [
     phpWithExtensions
+    phpWithExtensions.packages.composer
     pkgs.nodejs_22
     pkgs.curl
     pkgs.zip
     pkgs.unzip
-    pkgs.php85Packages.composer
     pkgs.vscode-extensions.xdebug.php-debug
   ];
 

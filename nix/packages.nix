@@ -1,6 +1,5 @@
 {
   pkgs,
-  phpWithExtensions,
   self,
   system,
 }:
@@ -8,6 +7,12 @@ let
   appSrc = ../.;
   appDir = "/app";
   appPort = "8000";
+
+  phpWithExtensions = import ./php.nix {
+    inherit pkgs;
+    production = true;
+  };
+
 in
 {
 
@@ -15,12 +20,10 @@ in
     pname = "php-build";
     version = "1.0.0";
     src = appSrc;
-
     vendorHash = "sha256-HPqBn6XIe39bRwMk1mR2LdnDSOkcUss4T45ybugwYBw=";
-    composerNoPlugins = false;
-    composerNoScripts = false;
 
     installPhase = ''
+      # composer dump-autoload -o
       mkdir -p $out/${appDir}
       cp -r vendor/ $out/${appDir}
     '';
@@ -142,7 +145,6 @@ in
           pkgs.bashInteractive
           pkgs.nginx
           pkgs.curl
-          pkgs.php85Packages.composer
           pkgs.xz
           pkgs.zip
           pkgs.unzip
@@ -160,6 +162,7 @@ in
         ${pkgs.dockerTools.shadowSetup}
         cp -r ${appSrc}/* ${appDir}
         chown -R nobody:nobody ${appDir}
+        chmod -R 770 ${appDir}
       '';
 
       extraCommands = ''
@@ -179,5 +182,4 @@ in
         };
       };
     };
-
 }

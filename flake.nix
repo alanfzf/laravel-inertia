@@ -22,24 +22,17 @@
           config.allowUnfree = true;
         };
 
-        phpWithExtensions = import ./nix/php.nix {
-          inherit pkgs;
-          production = false;
-        };
-
         packages = import ./nix/packages.nix {
           inherit
             pkgs
-            phpWithExtensions
             self
             system
             ;
         };
 
         devShell = import ./nix/devshell.nix {
-          inherit pkgs phpWithExtensions;
+          inherit pkgs;
         };
-
       in
       {
         packages = packages;
