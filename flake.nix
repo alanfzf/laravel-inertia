@@ -22,72 +22,21 @@
           config.allowUnfree = true;
         };
 
-        mkScript =
-          name: text:
-          let
-            script = pkgs.writeShellScriptBin name text;
-          in
-          script;
+        packages = import ./nix/packages.nix {
+          inherit
+            pkgs
+            self
+            system
+            ;
+        };
 
-        scripts = [
-          (mkScript "php-debug-adapter" ''
-            node ${pkgs.vscode-extensions.xdebug.php-debug}/share/vscode/extensions/xdebug.php-debug/out/phpDebug.js
-          '')
-        ];
-
-        phpWithExtensions = (
-          pkgs.php84.buildEnv {
-            extensions = (
-              { enabled, all }:
-              enabled
-              ++ (with all; [
-                xdebug
-                intl
-                mysqli
-                bcmath
-                curl
-                zip
-                soap
-                mbstring
-                gd
-                redis
-              ])
-            );
-            extraConfig = ''
-              error_reporting = E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED
-              xdebug.mode=debug
-              xdebug.start_with_request=yes
-              xdebug.client_host=127.0.0.1
-              xdebug.client_port=9003
-              xdebug.log_level = 0
-            '';
-          }
-        );
-
-        devPackages = with nixpkgs; [
-          # base stuff
-          phpWithExtensions
-          pkgs.nodejs-slim_22
-          pkgs.pnpm
-          pkgs.curl
-          pkgs.zip
-          pkgs.unzip
-          # php packages
-          pkgs.php84Packages.composer
-          pkgs.vscode-extensions.xdebug.php-debug
-        ];
-
-        postShellHook = "";
+        devShell = import ./nix/devshell.nix {
+          inherit pkgs;
+        };
       in
       {
-        devShells = {
-          default = pkgs.mkShell {
-            name = "php-dev-shell";
-            nativeBuildInputs = scripts;
-            packages = devPackages;
-            postShellHook = postShellHook;
-          };
-        };
+        packages = packages;
+        devShells.default = devShell;
       }
     );
 }

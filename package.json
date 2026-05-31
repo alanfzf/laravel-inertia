@@ -9,13 +9,8 @@
     "imports": {
         "#resources/*": "./resources/js/*"
     },
-    "engines": {
-        "npm": "please-use-pnpm",
-        "yarn": "please-use-pnpm",
-        "pnpm": ">=10.0.0"
-    },
     "devDependencies": {
-        "concurrently": "^9.0.1",
+        "concurrently": "^10.0.0",
         "intelephense": "^1.16.5",
         "prettier": "^3.8.1",
         "typescript-language-server": "^5.1.3"
