@@ -1,0 +1,23 @@
+name: ventas
+services:
+  web:
+    build: .
+    image: 050752619851.dkr.ecr.us-east-1.amazonaws.com/corpo/ventas:main
+    restart: unless-stopped
+    env_file:
+      - .env.prod.local
+    ports:
+      - "8300:8000"
+    volumes:
+      - productos_img:/var/www/html/public/img/productos/
+      - jwt_data:/var/www/html/config/jwt/
+      - cache:/var/www/html/var/share/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    post_start:
+      - command: chown -R nobody:nogroup /var/www/html/var/
+        user: root
+volumes:
+  jwt_data:
+  productos_img:
+  cache:

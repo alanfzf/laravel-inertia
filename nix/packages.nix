@@ -23,7 +23,6 @@ in
     vendorHash = "sha256-HPqBn6XIe39bRwMk1mR2LdnDSOkcUss4T45ybugwYBw=";
 
     installPhase = ''
-      # composer dump-autoload -o
       mkdir -p $out/${appDir}
       cp -r vendor/ $out/${appDir}
     '';
