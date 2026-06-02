@@ -36,7 +36,7 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
     # base packages
-    zip unzip ca-certificates xz-utils curl nginx \
+    zip unzip ca-certificates xz-utils curl nginx openssl \
     # php packages
     php php-fpm \
     # database extensions
@@ -57,7 +57,15 @@ RUN apt-get update && \
     # clean up
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && chown -R nobody:nogroup /var/www/html /run /var/lib/nginx /var/log/nginx
+    && chown -R nobody:nogroup /var/www/html /run /var/lib/nginx /var/log/nginx \
+    # generate self-signed ssl certificate
+    && mkdir -p /etc/nginx/ssl \
+    && openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout /etc/nginx/ssl/nginx.key \
+        -out /etc/nginx/ssl/nginx.crt \
+        -subj "/CN=localhost" \
+    && chmod 640 /etc/nginx/ssl/nginx.key \
+    && chown -R nobody:nogroup /etc/nginx/ssl
 
 # configure nginx
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
@@ -68,7 +76,8 @@ COPY docker/php/fpm-pool.conf /etc/php/8.4/fpm/pool.d/www.conf
 COPY docker/php/php.ini  /etc/php/8.4/cli/conf.d/99-custom.ini
 COPY docker/php/php.ini  /etc/php/8.4/fpm/conf.d/99-custom.ini
 
-EXPOSE 8000
+EXPOSE 80
+EXPOSE 443
 
 USER nobody
 
